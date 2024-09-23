@@ -1,4 +1,4 @@
-package io.github.evitwilly.nicestarrating
+package io.github.dmitrytsyvtsyn.nicestarrating
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -16,7 +16,6 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
-import androidx.annotation.Dimension.PX
 import androidx.core.animation.doOnEnd
 import kotlin.math.cos
 import kotlin.math.floor
@@ -197,10 +196,10 @@ class NiceStarRatingView @JvmOverloads constructor(
     data class Params(
         val rating: Float = 4f,
         val maxRating: Int = 5,
-        @Dimension(unit = PX) val horizontalMargin: Int = 0,
+        @Dimension(unit = Dimension.PX) val horizontalMargin: Int = 0,
         @ColorInt val color: Int = Color.rgb(255, 215, 0),
         val armNumber: Int = 5,
-        @Dimension(unit = PX) val strokeWidth: Int = 0,
+        @Dimension(unit = Dimension.PX) val strokeWidth: Int = 0,
         val halfOpportunity: Boolean = false,
         val isAnimatingEnabled: Boolean = false,
         val starAnimationDuration: Int = 60,

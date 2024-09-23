@@ -1,4 +1,4 @@
-package io.github.evitwilly.nicestarrating
+package io.github.dmitrytsyvtsyn.nicestarrating
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

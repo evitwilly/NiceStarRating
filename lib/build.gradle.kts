@@ -3,21 +3,25 @@ import java.util.Properties
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
     id("maven-publish")
     id("signing")
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 android {
-    namespace = "io.github.evitwilly.nicestarrating"
-    compileSdk = 33
+    namespace = "io.github.dmitrytsyvtsyn.nicestarrating"
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 19
-        targetSdk = 33
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+    testOptions {
+        targetSdk = libs.versions.targetSdk.get().toInt()
     }
 
     buildTypes {
@@ -31,43 +35,28 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.7.0")
+    implementation(libs.core.ktx)
 }
 
-fun fetchLocalProperties(): Properties {
-    val localProperties = Properties()
-    val localPropertiesFile = project.rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        FileInputStream(localPropertiesFile).use {
-            localProperties.load(it)
-        }
-    }
-    return localProperties
-}
-
-val localProperties = fetchLocalProperties()
+val localProperties = fetchProperties("local.properties")
+val publishArtifactId = "nicestarratingview"
+val githubUsername = "DmitryTsyvtsyn"
 
 afterEvaluate {
     publishing {
         publications {
             register<MavenPublication>("release") {
-                val publishArtifactId = "nicestarratingview"
-
                 from(components["release"])
 
-                groupId = "io.github.evitwilly.nicestarratingview"
+                groupId = "io.github.dmitrytsyvtsyn.nicestarratingview"
                 artifactId = publishArtifactId
-                version = "1.0.2"
+                version = "1.0.3"
 
                 repositories {
                     maven {
@@ -84,12 +73,12 @@ afterEvaluate {
                 pom {
                     name.set(publishArtifactId)
                     description.set("A simple view to display the rating with stars")
-                    url.set("https://github.com/evitwilly/NiceStarRatingView")
+                    url.set("https://github.com/$githubUsername/NiceStarRatingView")
 
                     licenses {
                         license {
                             name.set("MIT License")
-                            url.set("https://github.com/evitwilly/NiceStarRatingView/blob/develop/LICENSE.txt")
+                            url.set("https://github.com/$githubUsername/NiceStarRatingView/blob/develop/LICENSE.txt")
                         }
                     }
 
@@ -102,9 +91,9 @@ afterEvaluate {
                     }
 
                     scm {
-                        connection.set("scm:github.com/evitwilly/NiceStarRatingView.git")
-                        developerConnection.set("scm:git:ssh://github.com/evitwilly/NiceStarRatingView.git")
-                        url.set("https://github.com/evitwilly/NiceStarRatingView")
+                        connection.set("scm:github.com/$githubUsername/NiceStarRatingView.git")
+                        developerConnection.set("scm:git:ssh://github.com/$githubUsername/NiceStarRatingView.git")
+                        url.set("https://github.com/$githubUsername/NiceStarRatingView")
                     }
                 }
             }
@@ -119,4 +108,15 @@ signing {
         localProperties.getProperty("signing.password")
     )
     sign(publishing.publications)
+}
+
+fun fetchProperties(filename: String = "local.properties"): Properties {
+    val localProperties = Properties()
+    val localPropertiesFile = project.rootProject.file(filename)
+    if (localPropertiesFile.exists()) {
+        FileInputStream(localPropertiesFile).use {
+            localProperties.load(it)
+        }
+    }
+    return localProperties
 }
