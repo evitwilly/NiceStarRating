@@ -139,9 +139,9 @@ Add dependencies:
 
 ```xml
 <dependency>
-    <groupId>io.github.evitwilly.nicestarratingview</groupId>
+    <groupId>io.github.dmitrytsyvtsyn</groupId>
     <artifactId>nicestarratingview</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
@@ -151,7 +151,7 @@ Add dependencies:
 
 ```kotlin
 dependencies {
-    implementation("io.github.evitwilly.nicestarratingview:nicestarratingview:1.0.2")
+    implementation("io.github.dmitrytsyvtsyn:nicestarratingview:1.0.3")
 }
 ```
 
