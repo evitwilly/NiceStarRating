@@ -1,20 +1,26 @@
-import java.io.FileInputStream
-import java.util.Properties
+import org.jreleaser.model.Active
 
 plugins {
     id("com.android.library")
     kotlin("android")
     id("maven-publish")
-    id("signing")
+    id("org.jreleaser")
 }
 
 kotlin {
     jvmToolchain(17)
 }
 
+val githubUsername = "DmitryTsyvtsyn"
+val libraryGroupId = "io.github.dmitrytsyvtsyn"
+val libraryArtifactId = "nicestarratingview"
+val libraryVersion = "1.0.3"
+
 android {
     namespace = "io.github.dmitrytsyvtsyn.nicestarrating"
     compileSdk = libs.versions.compileSdk.get().toInt()
+
+    version = libraryVersion
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
@@ -44,79 +50,80 @@ dependencies {
     implementation(libs.core.ktx)
 }
 
-val localProperties = fetchProperties("local.properties")
-val publishArtifactId = "nicestarratingview"
-val githubUsername = "DmitryTsyvtsyn"
-
-afterEvaluate {
-    publishing {
-        publications {
-            register<MavenPublication>("release") {
-                from(components["release"])
-
-                groupId = "io.github.dmitrytsyvtsyn.nicestarratingview"
-                artifactId = publishArtifactId
-                version = "1.0.3"
-
-                repositories {
-                    maven {
-                        val releasesUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                        val snapshotsUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-                        url = if (version.toString().endsWith("SNAPSHOT")) snapshotsUrl else releasesUrl
-                        credentials {
-                            username = localProperties.getProperty("ossrhUsername")
-                            password = localProperties.getProperty("ossrhPassword")
-                        }
-                    }
-                }
-
-                pom {
-                    name.set(publishArtifactId)
-                    description.set("A simple view to display the rating with stars")
-                    url.set("https://github.com/$githubUsername/NiceStarRatingView")
-
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://github.com/$githubUsername/NiceStarRatingView/blob/develop/LICENSE.txt")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("dmitry_tsyvtsyn")
-                            name.set("Dmitry Tsyvtsyn")
-                            email.set("dmitry.kind.2@gmail.com")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:github.com/$githubUsername/NiceStarRatingView.git")
-                        developerConnection.set("scm:git:ssh://github.com/$githubUsername/NiceStarRatingView.git")
-                        url.set("https://github.com/$githubUsername/NiceStarRatingView")
-                    }
+jreleaser {
+    gitRootSearch = true
+    signing {
+        active.set(Active.ALWAYS)
+        armored = true
+        verify = true
+    }
+    project {
+        inceptionYear = "2024"
+        author("@$githubUsername")
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                create("sonatype") {
+                    active.set(Active.ALWAYS)
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository(layout.buildDirectory.dir("staging-deploy").get().toString())
+                    setAuthorization("Basic")
+                    applyMavenCentralRules = false // Wait for fix: https://github.com/kordamp/pomchecker/issues/21
+                    sign = true
+                    checksums = true
+                    sourceJar = true
+                    javadocJar = true
+                    retryDelay = 60
                 }
             }
         }
     }
 }
 
-signing {
-    useInMemoryPgpKeys(
-        localProperties.getProperty("signing.keyId"),
-        localProperties.getProperty("signing.key"),
-        localProperties.getProperty("signing.password")
-    )
-    sign(publishing.publications)
-}
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            afterEvaluate {
+                from(components["release"])
+            }
 
-fun fetchProperties(filename: String = "local.properties"): Properties {
-    val localProperties = Properties()
-    val localPropertiesFile = project.rootProject.file(filename)
-    if (localPropertiesFile.exists()) {
-        FileInputStream(localPropertiesFile).use {
-            localProperties.load(it)
+            groupId = libraryGroupId
+            artifactId = libraryArtifactId
+            version = libraryVersion
+
+            pom {
+                name.set(libraryArtifactId)
+                description.set("A simple view to display the rating with stars")
+                url.set("https://github.com/$githubUsername/NiceStarRatingView")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://github.com/$githubUsername/NiceStarRatingView/blob/develop/LICENSE.txt")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("dmitry_tsyvtsyn")
+                        name.set("Dmitry Tsyvtsyn")
+                        email.set("dmitry.kind.2@gmail.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:github.com/$githubUsername/NiceStarRatingView.git")
+                    developerConnection.set("scm:git:ssh://github.com/$githubUsername/NiceStarRatingView.git")
+                    url.set("https://github.com/$githubUsername/NiceStarRatingView")
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                setUrl(layout.buildDirectory.file("staging-deploy"))
+            }
         }
     }
-    return localProperties
 }
